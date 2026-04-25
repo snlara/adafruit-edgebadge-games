@@ -1,0 +1,59 @@
+start 0xbf
+select 0xdf
+a 0x7f
+b nothing
+up 0xfb
+down 0xf7
+left 0xfd
+right 0xef
+import board
+import digitalio
+import displayio
+import terminalio
+from adafruit_display_text import label
+
+# 1. Setup Display
+display = board.DISPLAY
+group = displayio.Group()
+text_area = label.Label(terminalio.FONT, text="READY", color=0xFFFFFF, scale=3, x=20, y=60)
+group.append(text_area)
+display.root_group = group
+
+# 2. Setup Pins
+latch = digitalio.DigitalInOut(board.BUTTON_LATCH)
+latch.switch_to_output(value=True)
+clock = digitalio.DigitalInOut(board.BUTTON_CLOCK)
+clock.switch_to_output(value=False)
+data = digitalio.DigitalInOut(board.BUTTON_OUT)
+data.switch_to_input()
+
+def get_buttons():
+    latch.value = False
+    latch.value = True
+    buttons = 0
+    # Reading MSB-first based on your specific hex values
+    for i in range(7, -1, -1):
+        clock.value = True
+        if not data.value:
+            buttons |= (1 << i)
+        clock.value = False
+    return buttons
+
+print("System Active. Buttons Mapped.")
+
+# 3. Main Loop
+while True:
+    b = get_buttons()
+    
+    # Map your specific hex values
+    if b == 0xfb:      text_area.text = "UP"
+    elif b == 0xf7:    text_area.text = "DOWN"
+    elif b == 0xfd:    text_area.text = "LEFT"
+    elif b == 0xef:    text_area.text = "RIGHT"
+    elif b == 0xbf:    text_area.text = "START"
+    elif b == 0xdf:    text_area.text = "SELECT"
+    elif b == 0x7f:    text_area.text = "A"
+    else:
+        # Only show READY if no button is held
+        if b == 0xff or b == 0x00:
+            text_area.text = "READY"

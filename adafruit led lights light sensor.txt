@@ -1,0 +1,32 @@
+import board
+import neopixel
+import analogio
+import time
+
+# Initialize pixels
+pixels = neopixel.NeoPixel(board.NEOPIXEL, 5, brightness=0.5, auto_write=True)
+light_sensor = analogio.AnalogIn(board.LIGHT)
+
+# Manual map function to replace simpleio
+def map_range(value, in_min, in_max, out_min, out_max):
+    # Calculate percentage of current value in the input range
+    normalized = (value - in_min) / (in_max - in_min)
+    # Apply to output range
+    return out_min + (normalized * (out_max - out_min))
+
+print("Dashboard active. Covering sensor will brighten LEDs.")
+
+while True:
+    raw_light = light_sensor.value
+    
+    # Range tuning: 
+    # Adjust 5000 and 60000 based on your room's actual light conditions
+    brightness = map_range(raw_light, 5000, 60000, 1.0, 0.0)
+    
+    # Constrain the result
+    pixels.brightness = max(0.0, min(1.0, brightness))
+    
+    # Set to a warm, soft white
+    pixels.fill((255, 150, 50)) 
+    
+    time.sleep(0.05)
