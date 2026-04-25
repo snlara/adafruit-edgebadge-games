@@ -1,0 +1,23 @@
+import board
+import displayio
+import adafruit_imageload
+
+# 1. Access the display
+display = board.DISPLAY
+
+# 2. Create a Group to hold the image
+group = displayio.Group()
+
+# 3. Load the image
+image, palette = adafruit_imageload.load("/salandmari.bmp")
+
+# 4. Create a TileGrid and add it to the group
+tile_grid = displayio.TileGrid(image, pixel_shader=palette)
+group.append(tile_grid)
+
+# 5. Show the group on the display
+display.root_group = group
+
+# Keep the script running
+while True:
+    pass
